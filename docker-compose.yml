@@ -9,3 +9,14 @@ services:
     restart: unless-stopped
     ports:
       - "8123:8123"        # Si tu app Flask expone el puerto 5000
+      
+  esphome:
+    container_name: esphome
+    image: esphome/esphome:latest
+    volumes:
+      - /ruta/a/tu/configuracion/esphome:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /dev/ttyUSB0:/dev/ttyUSB0 # Opcional: para flashear por USB
+    restart: unless-stopped
+    ports:
+      - "6052:6052"
