@@ -20,3 +20,4 @@ services:
     restart: unless-stopped
     ports:
       - "6052:6052"
+    privileged: true
