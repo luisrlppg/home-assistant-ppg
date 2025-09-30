@@ -1,23 +1,47 @@
 services:
+  # Home Assistant (Modificado a network_mode: host)
   homeassistant:
     container_name: homeassistant
     image: "ghcr.io/home-assistant/home-assistant:stable"
+    # *** CAMBIO IMPORTANTE: Usar network_mode: host para la detección LAN y el addon ***
+    network_mode: host
     volumes:
       - /PATH_TO_YOUR_CONFIG:/config
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
     restart: unless-stopped
-    ports:
-      - "8123:8123"        # Si tu app Flask expone el puerto 5000
+    # NOTA: Quité la sección 'ports' porque ya no es necesaria con network_mode: host
+    environment:
+      - TZ=America/Mexico_City 
+
+  # Servicio del Complemento Oficial de eWeLink
+  ewelink_addon:
+    container_name: ewelink_smart_home
+    # Imagen oficial del complemento
+    image: addoncsm/ewelink-ha
+    # Usa network_mode: host para comunicarse con HA y para la detección de LAN
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      # Asegúrate de crear esta carpeta en el host.
+      - /PATH_TO_YOUR_CONFIG/ewelink_data:/data 
+    environment:
+      # *** REEMPLAZAR ESTOS VALORES ***
+      # Como HA está en modo host, usa la IP de loopback del host.
+      - HA_URL=http://127.0.0.1:8123 
+      # ¡IMPORTANTE! Reemplaza con tu token de larga duración.
+      - SUPERVISOR_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJlYmNlOTNjOWQzODE0YjNjODg5NTcyOTYwNjE0ZTk1YSIsImlhdCI6MTc1OTI2MDA5MCwiZXhwIjoyMDc0NjIwMDkwfQ.bUkU2v1uJDrazAp-CCHIbs8yHcHGSI66HTk5x9TDjUc 
       
+  # ESPHome (Mantengo la configuración, pero ajusto la red)
   esphome:
     container_name: esphome
     image: esphome/esphome:latest
+    # Es mejor usar network_mode: host aquí también para que la detección de HA funcione
+    network_mode: host 
     volumes:
       - /ruta/a/tu/configuracion/esphome:/config
       - /etc/localtime:/etc/localtime:ro
       - /dev/ttyUSB0:/dev/ttyUSB0 # Opcional: para flashear por USB
     restart: unless-stopped
-    ports:
-      - "6052:6052"
-    privileged: true
+    # El puerto 6052 ya está abierto en el host gracias a network_mode: host
+    # NOTA: Quité la sección 'ports'
